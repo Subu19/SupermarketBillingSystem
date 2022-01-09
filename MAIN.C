@@ -10,14 +10,21 @@ int askPassword();
 void checkSelection(int ,int);
 void redirect(int);
 void menu(int);
+void viewLowStock();
 void createBill();
 void manageStock(int);
 void changePass();
 void addProduct();
 void stockRedirect(int);
+void getProductRedirect(int);
 void getProduct();
+void getProductMenu(int);
+void searchByC();
+void searchByName();
+void searchAllProduct();
 void editProduct();
 void deleteProduct();
+int scan = 0;
 int theight=0;
 void addrow(int id, int qt);
 int getText(char[], int, int, int) ;
@@ -315,9 +322,12 @@ int askPassword(){
 }
 
 void menu(int o){
-	char c,buff[80];
-	int w=getmaxx(), h=getmaxy(),end=0;
+	FILE *fp;
+	char c,buff[80],lowStockC[20];
+	int w=getmaxx(), h=getmaxy(),end=0,i,j,x_dis,flag=0, lowStock=0;
+	struct product pdt[1];
 	cleardevice();
+
 	theme();
 	setcolor(BLACK);
 	outtextxy(300, 90, "Menu");
@@ -347,6 +357,76 @@ void menu(int o){
 	setcolor(WHITE);
 	outtextxy(157, 327, "Exit(x)");
 	setcolor(BLACK);
+	j=0;
+	x_dis=0;
+	if(scan == 0){
+	for(i=0;i<=250;i++){
+		if(x_dis == 100){
+			flag = 1;
+		}else if(x_dis == 0){
+			flag= 0;
+		}
+		if(flag == 1){
+		x_dis--;
+		}else if(flag == 0) {
+		x_dis++;
+		}
+		setcolor(BLACK);
+		rectangle(w-150,h-40,w-30, h-20);
+		setfillstyle(SOLID_FILL, LIGHTGRAY);
+		floodfill(w-148,h-35,BLACK);
+		setcolor(GREEN);
+		rectangle(w-150+ x_dis, h-40, w-130+x_dis,h-20);
+		setfillstyle(SOLID_FILL, GREEN);
+		floodfill(w-148+x_dis,h-35,GREEN);
+		delay(15);
+		}
+	}
+	if(scan == 0){
+	for(i=10;i<=200;i++){
+		setcolor(YELLOW);
+		setfillstyle(SOLID_FILL,YELLOW);
+		rectangle(w,h-80, w-i,h-20);
+		floodfill(w-5, h-70, YELLOW);
+		delay(2);
+
+	}
+	scan=1;
+		fp = fopen("product.txt", "r");
+		if(fp==NULL){
+		alert();
+		outtext("file not found");
+		}
+		while(fread(&pdt, sizeof(struct product), 1, fp)){
+			if(pdt[0].quantity <20){
+				lowStock++;
+			}
+		}
+		fclose(fp);
+		if(lowStock !=0){
+			setcolor(BLACK);
+			settextstyle(0, HORIZ_DIR, 1);
+			sprintf(lowStockC, "%d", lowStock);
+			setcolor(RED);
+			outtextxy(w-190, h-70, lowStockC);
+			setcolor(BLACK);
+			outtextxy(w-179, h-70, "Items are low on stock!");
+			setcolor(LIGHTGRAY);
+			outtextxy(w-190, h-50,"Press (e) to view." );
+		}
+	}else{
+	     setcolor(BLACK);
+	     line(w-50, h-50, w-20,h-15);
+	     line(w-20, h-15, w-80, h-15);
+	     line(w-80,h-15, w-50,h-50);
+	     setfillstyle(SOLID_FILL,YELLOW);
+	     floodfill(w-50,h-30, BLACK);
+	     settextstyle(0, HORIZ_DIR, 3);
+	     outtextxy(w-58,h-40, "!");
+	     setcolor(BLACK);
+	     settextstyle(0,HORIZ_DIR, 1);
+	     outtextxy(w-58,h-70,"(e)");
+	}
 	do{
 	       c= getch();
 	       switch(c){
@@ -372,6 +452,9 @@ void menu(int o){
 				end=1;
 				}
 				break;
+			case 'e':
+				viewLowStock();
+				break;
 			case '\r':
 				end=1;
 				redirect(o);
@@ -380,10 +463,173 @@ void menu(int o){
 				if(c=='x'){
 				end=1;
 				}
+				break;
 
 
 	       }
 	}while(!end);
+}
+void viewLowStock(){
+	char category[20],price[20],quantity[20],c,countC[20],tmpId[20];
+	int w= getmaxx(), h= getmaxy(),height=180,id,end=0,count=0,i=0, perPage;
+	struct product pdt[1], pdt1[100];
+	FILE *fp;
+	cleardevice();
+	theme();
+	info();
+	setfillstyle(SOLID_FILL, LIGHTBLUE);
+	outtext("Low On Stock");
+	setcolor(BLACK);
+	rectangle(100,130,w-100, h-50 );
+	floodfill(110,135, BLACK);
+	settextstyle(0, HORIZ_DIR, 1);
+	fp = fopen("product.txt", "r");
+	if(fp == NULL){
+	alert();
+	outtext("Error");
+	return;
+	}
+	while(fread(&pdt, sizeof(struct product), 1, fp)){
+		if(pdt[0].quantity <= 20){
+			pdt1[count] = pdt[0];
+			count++;
+		}
+
+
+	}
+	perPage = (((h-100)-180)/40);
+	if(count>0){
+		sprintf(countC, "%d", count);
+		setcolor(WHITE);
+		outtextxy(120,160,"Found ");
+		setcolor(YELLOW);
+		outtextxy(165,160,countC);
+		setcolor(WHITE);
+		outtextxy(178,160,"products low on stock!");
+		nextpage:
+		if(i>0 && i<count){
+			setcolor(BLACK);
+			rectangle(280,h-80, 360, h-60);
+			setfillstyle(SOLID_FILL, GREEN);
+			floodfill(282, h-76, BLACK);
+			settextstyle(0, HORIZ_DIR, 1);
+			outtextxy(286, h-74, "Prev(a)");
+		}
+		while(height <= h-100){
+			if(i<count){
+				settextstyle(0, HORIZ_DIR, 1);
+				setcolor(BLACK);
+				setfillstyle(SOLID_FILL, WHITE);
+				rectangle(150, height, w-150, height+30);
+				floodfill(152, height+2, BLACK);
+				sprintf(tmpId, "ID: %d", pdt1[i].id);
+				outtextxy(155, height+12, tmpId);
+				setcolor(MAGENTA);
+				outtextxy(215,height+12, pdt1[i].name);
+				sprintf(price, "Rs: %d",pdt1[i].price);
+				setcolor(GREEN);
+				outtextxy(310,height+12,price);
+				setcolor(BLACK);
+				sprintf(quantity, "QT: %d", pdt1[i].quantity);
+				outtextxy(400, height+12, quantity);
+				i++;
+
+			}
+			height=height+40;
+
+		}
+		height=180;
+		setcolor(BLACK);
+		rectangle(120,h-80, 200, h-60);
+		setfillstyle(SOLID_FILL, RED);
+		floodfill(122, h-76, BLACK);
+		setcolor(WHITE);
+		outtextxy(126, h-74, "<=Exit(x)");
+
+		if(i<count){
+			setcolor(BLACK);
+			rectangle(w-195, h-80, w-120, h-60);
+			setfillstyle(SOLID_FILL, GREEN);
+			floodfill(w-192, h-78, BLACK);
+			outtextxy(w-188, h-74, "Next(d)");
+		}
+		end=0;
+		while(!end){
+			c=getch();
+			switch(c){
+				case 'a':
+					if(i> perPage ){
+					    if(i> (count -(count % perPage ))){
+						 i =  i-(perPage+ (count % perPage));
+					    }else{
+						i = i- (2 * perPage);
+					    }
+					    height=180;
+
+					    cleardevice();
+					    theme();
+					    info();
+					    outtext("Low On Stock");
+					    setfillstyle(SOLID_FILL, LIGHTBLUE);
+					    setcolor(BLACK);
+					    rectangle(100,130,w-100, h-50 );
+					    floodfill(110,135, BLACK);
+					    setcolor(WHITE);
+					    settextstyle(0, HORIZ_DIR, 1);
+					    outtextxy(120,160,"Found ");
+					    setcolor(YELLOW);
+					    outtextxy(165,160,countC);
+					    setcolor(WHITE);
+					    outtextxy(178,160,"products low on stock!");
+					    end =1;
+					    goto nextpage;
+					}
+					break;
+				case 'd':
+					if(i<count){
+					height=180;
+					cleardevice();
+					theme();
+					info();
+					setfillstyle(SOLID_FILL, LIGHTBLUE);
+					setcolor(BLACK);
+					rectangle(100,130,w-100, h-50 );
+					floodfill(110,135, BLACK);
+					outtext("Low On Stock");
+					settextstyle(0, HORIZ_DIR, 1);
+					setcolor(WHITE);
+					outtextxy(120,160,"Found ");
+					setcolor(YELLOW);
+					outtextxy(165,160,countC);
+					setcolor(WHITE);
+					outtextxy(178,160,"products low on stock!");
+					setcolor(BLACK);
+					end =1;
+					goto nextpage;
+					}
+					break;
+				case 'x':
+					end=1;
+					menu(1);
+					break;
+				default:
+					break;
+
+			}
+		}
+
+
+
+
+
+
+
+	}else{
+		outtextxy(120,155,"0 product found :( ");
+		getch();
+	}
+	fclose(fp) ;
+
 }
 void checkSelection(int o,int n){
 	if(o == n){
@@ -411,11 +657,27 @@ void stockRedirect(int o){
 	if(o==1)
 	addProduct();
 	else if(o==2)
-	getProduct();
+	getProductMenu(1);
 	else if(o==3)
 	editProduct();
 	else if(o == 4)
 	deleteProduct();
+	else{
+	cleardevice();
+	theme();
+	alert();
+	outtext("LOL, i am lost");
+	}
+}
+void getProductRedirect(int o){
+	if(o==1)
+	getProduct();
+	else if(o==2)
+	searchByC();
+	else if(o==3)
+	searchByName();
+	else if(o==4)
+	searchAllProduct();
 	else{
 	cleardevice();
 	theme();
@@ -846,6 +1108,97 @@ int getText(char *str, int x, int y,int n){
 	}while(!end);
    return 0;
 }
+void getProductMenu(int o){
+	int h= getmaxy(), w= getmaxx(),end=0;
+	char c;
+	cleardevice();
+	theme();
+	info();
+	outtext("Lets Search Product");
+	setcolor(BLACK);
+	rectangle(100,130,w-100, h-50 );
+	setfillstyle(SOLID_FILL, LIGHTBLUE);
+	floodfill(105,135, BLACK);
+	settextstyle(0, HORIZ_DIR, 1);
+	outtextxy(12,h-20,"Use 1,2,3...keys to negivate options.");
+
+	rectangle(150, 150, w-150, 180);
+	checkSelection(o,1);
+	floodfill(152, 152, BLACK);
+	outtextxy(155,162, "1. Search By Id");
+
+	rectangle(150, 200, w-150, 230);
+	checkSelection(o,2);
+	floodfill(152, 202, BLACK);
+	outtextxy(155,212, "2. Search by Category");
+
+	rectangle(150, 250, w-150, 280);
+	checkSelection(o,3);
+	floodfill(152, 252, BLACK);
+	outtextxy(155,262, "3. Search by Name");
+
+	rectangle(150, 300, w-150, 330);
+	checkSelection(o,4);
+	floodfill(152, 302, BLACK);
+	outtextxy(155,312, "4. Search all Products");
+	setcolor(BLACK);
+		rectangle(120,h-80, 200, h-60);
+		setfillstyle(SOLID_FILL, GREEN);
+		floodfill(122, h-76, BLACK);
+		outtextxy(126, h-74, "<=Back(x)");
+	do{
+	       c= getch();
+	       switch(c){
+			case '1':
+				if(o!=1){
+				o=1;
+				getProductMenu(o);
+				end=1;
+				}
+				break;
+			case '2':
+				if(o!=2){
+				o=2;
+				getProductMenu(o);
+				end=1;
+				}
+				break;
+			case '3':
+				if(o!=3){
+				o=3;
+				getProductMenu(o);
+				end=1;
+				}
+				break;
+			case '4':
+				if(o!=4){
+				o=4;
+				getProductMenu(o);
+				end=1;
+				}
+				break;
+			case 'x':
+				menu(1);
+				end=1;
+				break;
+			case '\r':
+
+
+				end=1;
+				getProductRedirect(o);
+				break;
+			default:
+				if(c=='y'){
+				end=1;
+				}
+				break;
+
+
+	       }
+	}while(!end);
+
+}
+
 void getProduct(){
 	char tmpId[20],price[20],quantity[20],c;
 	int w= getmaxx(), h= getmaxy(),i=10,id,found=1;
@@ -911,6 +1264,530 @@ void getProduct(){
 	manageStock(1);
 		}
 	fclose(fp);
+}
+void searchByName(){
+	 char name[20],price[20],quantity[20],c,countC[20],tmpId[20];
+	int w= getmaxx(), h= getmaxy(),height=180,id,end=0,count=0,i=0, perPage;
+	struct product pdt[1], pdt1[100];
+	FILE *fp;
+	cleardevice();
+	theme();
+	info();
+	setfillstyle(SOLID_FILL, LIGHTBLUE);
+	outtext("Get Category");
+	setcolor(BLACK);
+	rectangle(100,130,w-100, h-50 );
+	floodfill(110,135, BLACK);
+	settextstyle(0, HORIZ_DIR, 1);
+	outtextxy(120,145,"Enter Name: ");
+	getText(name, 300,145, 20);
+	fp = fopen("product.txt", "r");
+	if(fp == NULL){
+	alert();
+	outtext("error");
+	return;
+	}
+	while(fread(&pdt, sizeof(struct product), 1, fp)){
+		if(strcmp(pdt[0].name , name) ==0){
+			pdt1[count] = pdt[0];
+			count++;
+		}
+
+
+	}
+	fclose(fp);
+	perPage = (((h-100)-180)/38);
+	if(count>0){
+		sprintf(countC, "%d", count);
+		setcolor(WHITE);
+		moveto(120,160);
+		outtext("Found ");
+		setcolor(YELLOW);
+		outtext(countC);
+		setcolor(WHITE);
+		outtext(" products!");
+		alert();
+		info();
+
+		outtext("Search of : ");
+		setcolor(YELLOW);
+		outtext(name);
+		nextpage:
+		if(i>0 && i<count){
+			setcolor(BLACK);
+			rectangle(280,h-80, 360, h-60);
+			setfillstyle(SOLID_FILL, GREEN);
+			floodfill(282, h-76, BLACK);
+			settextstyle(0, HORIZ_DIR, 1);
+			outtextxy(286, h-74, "Prev(a)");
+		}
+		while(height <= h-100){
+			if(i<count){
+				settextstyle(0, HORIZ_DIR, 1);
+				setcolor(BLACK);
+				setfillstyle(SOLID_FILL, WHITE);
+				rectangle(150, height, w-150, height+30);
+				floodfill(152, height+2, BLACK);
+				sprintf(tmpId, "ID: %d", pdt1[i].id);
+				outtextxy(155, height+12, tmpId);
+				setcolor(MAGENTA);
+				outtextxy(215,height+12, pdt1[i].name);
+				sprintf(price, "Rs: %d",pdt1[i].price);
+				setcolor(GREEN);
+				outtextxy(310,height+12,price);
+				setcolor(BLACK);
+				sprintf(quantity, "QT: %d", pdt1[i].quantity);
+				outtextxy(400, height+12, quantity);
+				i++;
+
+			}
+			height=height+40;
+
+		}
+		height=180;
+		setcolor(BLACK);
+		rectangle(120,h-80, 200, h-60);
+		setfillstyle(SOLID_FILL, RED);
+		floodfill(122, h-76, BLACK);
+		setcolor(WHITE);
+		outtextxy(126, h-74, "<=Exit(x)");
+
+		if(i<count){
+			setcolor(BLACK);
+			rectangle(w-195, h-80, w-120, h-60);
+			setfillstyle(SOLID_FILL, GREEN);
+			floodfill(w-192, h-78, BLACK);
+			outtextxy(w-188, h-74, "Next(d)");
+		}
+		end=0;
+		while(!end){
+			c=getch();
+			switch(c){
+				case 'a':
+					if(i> perPage ){
+					    if(i> (count -(count % perPage ))){
+						 i =  i-(perPage+ (count % perPage));
+					    }else{
+						i = i- (2 * perPage);
+					    }
+					    height=180;
+
+					    cleardevice();
+					    theme();
+					    info();
+					    setfillstyle(SOLID_FILL, LIGHTBLUE);
+					    setcolor(BLACK);
+					    rectangle(100,130,w-100, h-50 );
+					    floodfill(110,135, BLACK);
+					    outtext("Search of: ");
+					    setcolor(YELLOW);
+					    outtext(name);
+					    setcolor(WHITE);
+					    settextstyle(0, HORIZ_DIR, 1);
+					    moveto(120,160);
+					    outtext("Found ");
+					    setcolor(YELLOW);
+					    outtext(countC);
+					    setcolor(WHITE);
+					    outtext(" products!");
+					    end =1;
+					    goto nextpage;
+					}
+					break;
+				case 'd':
+					if(i<count){
+					height=180;
+					cleardevice();
+					theme();
+					info();
+					setfillstyle(SOLID_FILL, LIGHTBLUE);
+					setcolor(BLACK);
+					rectangle(100,130,w-100, h-50 );
+					floodfill(110,135, BLACK);
+					outtext("Search of: ");
+					setcolor(YELLOW);
+					outtext(name);
+					settextstyle(0, HORIZ_DIR, 1);
+					setcolor(WHITE);
+					moveto(120,160);
+					outtext("Found ");
+					setcolor(YELLOW);
+					outtext(countC);
+					setcolor(WHITE);
+					outtext(" products!");
+					setcolor(BLACK);
+					end =1;
+					goto nextpage;
+					}
+					break;
+				case 'x':
+					end=1;
+					getProductMenu(1);
+					break;
+				default:
+					break;
+
+			}
+		}
+
+
+
+
+
+
+
+	}else{
+		outtextxy(120,155,"0 product found :( ");
+		getch();
+	}
+
+}
+void searchAllProduct(){
+	char category[20],price[20],quantity[20],c,countC[20],tmpId[20];
+	int w= getmaxx(), h= getmaxy(),height=180,id,end=0,count=0,i=0, perPage;
+	struct product pdt[1], pdt1[1000];
+	FILE *fp;
+	cleardevice();
+	theme();
+	info();
+	setfillstyle(SOLID_FILL, LIGHTBLUE);
+	outtext("All Products");
+	setcolor(BLACK);
+	rectangle(100,130,w-100, h-50 );
+	floodfill(110,135, BLACK);
+	settextstyle(0, HORIZ_DIR, 1);
+	fp = fopen("product.txt", "r");
+	if(fp == NULL){
+	alert();
+	outtext("error");
+	return;
+	}
+	while(fread(&pdt, sizeof(struct product), 1, fp)){
+			pdt1[count] = pdt[0];
+			count++;
+	}
+	fclose(fp);
+	perPage = (((h-100)-180)/38);
+	if(count>0){
+		sprintf(countC, "%d", count);
+
+		settextstyle(0, HORIZ_DIR, 1);
+		moveto(120,160);
+		setcolor(WHITE);
+		outtext("Found ");
+		setcolor(YELLOW);
+		outtext(countC);
+		setcolor(WHITE);
+		outtext(" product!");
+		alert();
+		info();
+
+		outtext("All Product");
+		nextpage:
+		if(i>0 && i<count){
+			setcolor(BLACK);
+			rectangle(280,h-80, 360, h-60);
+			setfillstyle(SOLID_FILL, GREEN);
+			floodfill(282, h-76, BLACK);
+			settextstyle(0, HORIZ_DIR, 1);
+			outtextxy(286, h-74, "Prev(a)");
+		}
+		while(height <= h-100){
+			if(i<count){
+				settextstyle(0, HORIZ_DIR, 1);
+				setcolor(BLACK);
+				setfillstyle(SOLID_FILL, WHITE);
+				rectangle(150, height, w-150, height+30);
+				floodfill(152, height+2, BLACK);
+				sprintf(tmpId, "ID: %d", pdt1[i].id);
+				outtextxy(155, height+12, tmpId);
+				setcolor(MAGENTA);
+				outtextxy(215,height+12, pdt1[i].name);
+				sprintf(price, "Rs: %d",pdt1[i].price);
+				setcolor(GREEN);
+				outtextxy(310,height+12,price);
+				setcolor(BLACK);
+				sprintf(quantity, "QT: %d", pdt1[i].quantity);
+				outtextxy(400, height+12, quantity);
+				i++;
+
+			}
+			height=height+40;
+
+		}
+		height=180;
+		setcolor(BLACK);
+		rectangle(120,h-80, 200, h-60);
+		setfillstyle(SOLID_FILL, RED);
+		floodfill(122, h-76, BLACK);
+		setcolor(WHITE);
+		outtextxy(126, h-74, "<=Exit(x)");
+
+		if(i<count){
+			setcolor(BLACK);
+			rectangle(w-195, h-80, w-120, h-60);
+			setfillstyle(SOLID_FILL, GREEN);
+			floodfill(w-192, h-78, BLACK);
+			outtextxy(w-188, h-74, "Next(d)");
+		}
+		end=0;
+		sprintf(category , "%d", perPage);
+		outtextxy(200,200,category);
+		while(!end){
+			c=getch();
+			switch(c){
+				case 'a':
+					if(i> perPage ){
+					    if(i> (count -(count % perPage ))){
+						 i =  (i-(perPage+ (count % perPage)));
+					    }else{
+						i = (i- (2 * perPage));
+					    }
+
+					    height=180;
+
+					    cleardevice();
+					    theme();
+					    info();
+					    setfillstyle(SOLID_FILL, LIGHTBLUE);
+					    setcolor(BLACK);
+					    rectangle(100,130,w-100, h-50 );
+					    floodfill(110,135, BLACK);
+					    outtext("All Products");
+					    setcolor(WHITE);
+					    settextstyle(0, HORIZ_DIR, 1);
+					    moveto(120,160);
+					    outtext("Found ");
+					    setcolor(YELLOW);
+					    outtext(countC);
+					    setcolor(WHITE);
+					    outtext(" product!");
+					    end =1;
+					    goto nextpage;
+					}
+					break;
+				case 'd':
+					if(i<count){
+					height=180;
+					cleardevice();
+					theme();
+					info();
+					setfillstyle(SOLID_FILL, LIGHTBLUE);
+					setcolor(BLACK);
+					rectangle(100,130,w-100, h-50 );
+					floodfill(110,135, BLACK);
+					outtext("All Products");
+					    setcolor(WHITE);
+					    settextstyle(0, HORIZ_DIR, 1);
+					    moveto(120,160);
+					    outtext("Found ");
+					    setcolor(YELLOW);
+					    outtext(countC);
+					    setcolor(WHITE);
+					    outtext(" product!");
+					setcolor(BLACK);
+					end =1;
+					goto nextpage;
+					}
+					break;
+				case 'x':
+					end=1;
+					getProductMenu(1);
+					break;
+				default:
+					break;
+
+			}
+		}
+
+
+
+
+
+
+
+	}else{
+		outtextxy(120,155,"0 product found :( ");
+		getch();
+		getProductMenu(1);
+	}
+}
+void searchByC(){
+	char category[20],price[20],quantity[20],c,countC[20],tmpId[20];
+	int w= getmaxx(), h= getmaxy(),height=180,id,end=0,count=0,i=0, perPage;
+	struct product pdt[1], pdt1[100];
+	FILE *fp;
+	cleardevice();
+	theme();
+	info();
+	setfillstyle(SOLID_FILL, LIGHTBLUE);
+	outtext("Get Category");
+	setcolor(BLACK);
+	rectangle(100,130,w-100, h-50 );
+	floodfill(110,135, BLACK);
+	settextstyle(0, HORIZ_DIR, 1);
+	outtextxy(120,145,"Enter Category: ");
+	getText(category, 300,145, 20);
+	fp = fopen("product.txt", "r");
+	if(fp == NULL){
+	alert();
+	outtext("error");
+	return;
+	}
+	while(fread(&pdt, sizeof(struct product), 1, fp)){
+		if(strcmp(pdt[0].category , category) ==0){
+			pdt1[count] = pdt[0];
+			count++;
+		}
+
+
+	}
+	fclose(fp);
+	perPage = (((h-100)-180)/38);
+	if(count>0){
+		sprintf(countC, "%d", count);
+		setcolor(WHITE);
+		moveto(120,160);
+		outtext("Found ");
+		setcolor(YELLOW);
+		outtext(countC);
+		setcolor(WHITE);
+		outtext(" products!");
+		alert();
+		info();
+
+		outtext("Search of : ");
+		setcolor(YELLOW);
+		outtext(category);
+		nextpage:
+		if(i>0 && i<count){
+			setcolor(BLACK);
+			rectangle(280,h-80, 360, h-60);
+			setfillstyle(SOLID_FILL, GREEN);
+			floodfill(282, h-76, BLACK);
+			settextstyle(0, HORIZ_DIR, 1);
+			outtextxy(286, h-74, "Prev(a)");
+		}
+		while(height <= h-100){
+			if(i<count){
+				settextstyle(0, HORIZ_DIR, 1);
+				setcolor(BLACK);
+				setfillstyle(SOLID_FILL, WHITE);
+				rectangle(150, height, w-150, height+30);
+				floodfill(152, height+2, BLACK);
+				sprintf(tmpId, "ID: %d", pdt1[i].id);
+				outtextxy(155, height+12, tmpId);
+				setcolor(MAGENTA);
+				outtextxy(215,height+12, pdt1[i].name);
+				sprintf(price, "Rs: %d",pdt1[i].price);
+				setcolor(GREEN);
+				outtextxy(310,height+12,price);
+				setcolor(BLACK);
+				sprintf(quantity, "QT: %d", pdt1[i].quantity);
+				outtextxy(400, height+12, quantity);
+				i++;
+
+			}
+			height=height+40;
+
+		}
+		height=180;
+		setcolor(BLACK);
+		rectangle(120,h-80, 200, h-60);
+		setfillstyle(SOLID_FILL, RED);
+		floodfill(122, h-76, BLACK);
+		setcolor(WHITE);
+		outtextxy(126, h-74, "<=Exit(x)");
+
+		if(i<count){
+			setcolor(BLACK);
+			rectangle(w-195, h-80, w-120, h-60);
+			setfillstyle(SOLID_FILL, GREEN);
+			floodfill(w-192, h-78, BLACK);
+			outtextxy(w-188, h-74, "Next(d)");
+		}
+		end=0;
+		while(!end){
+			c=getch();
+			switch(c){
+				case 'a':
+					if(i> perPage ){
+					    if(i> (count -(count % perPage ))){
+						 i =  i-(perPage+ (count % perPage));
+					    }else{
+						i = i- (2 * perPage);
+					    }
+					    height=180;
+
+					    cleardevice();
+					    theme();
+					    info();
+					    setfillstyle(SOLID_FILL, LIGHTBLUE);
+					    setcolor(BLACK);
+					    rectangle(100,130,w-100, h-50 );
+					    floodfill(110,135, BLACK);
+					    outtext("Search of: ");
+					    setcolor(YELLOW);
+					    outtext(category);
+					    setcolor(WHITE);
+					    settextstyle(0, HORIZ_DIR, 1);
+					    moveto(120,160);
+					    outtext("Found ");
+					    setcolor(YELLOW);
+					    outtext(countC);
+					    setcolor(WHITE);
+					    outtext(" products!");
+					    end =1;
+					    goto nextpage;
+					}
+					break;
+				case 'd':
+					if(i<count){
+					height=180;
+					cleardevice();
+					theme();
+					info();
+					setfillstyle(SOLID_FILL, LIGHTBLUE);
+					setcolor(BLACK);
+					rectangle(100,130,w-100, h-50 );
+					floodfill(110,135, BLACK);
+					outtext("Search of: ");
+					setcolor(YELLOW);
+					outtext(category);
+					settextstyle(0, HORIZ_DIR, 1);
+					setcolor(WHITE);
+					moveto(120,160);
+					outtext("Found ");
+					setcolor(YELLOW);
+					outtext(countC);
+					setcolor(WHITE);
+					outtext(" products!");
+					setcolor(BLACK);
+					end =1;
+					goto nextpage;
+					}
+					break;
+				case 'x':
+					end=1;
+					getProductMenu(1);
+					break;
+				default:
+					break;
+
+			}
+		}
+
+
+
+
+
+
+
+	}else{
+		outtextxy(120,155,"0 product found :( ");
+		getch();
+		getProductMenu(1);
+	}
 }
 void editProduct(){
 	char tmpId[20],price[20],quantity[20],c,tmpPrice[20], tmpQt[20];
