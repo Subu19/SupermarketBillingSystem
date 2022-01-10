@@ -34,7 +34,7 @@ struct product{
 	int quantity;
 	int price;
 	int id;
-};
+}pdt;
 struct user {
 	char username[20];
 	char password[20];
@@ -325,8 +325,7 @@ int askPassword(){
 void menu(int o){
 	FILE *fp;
 	char c,buff[80],lowStockC[20];
-	int w=getmaxx(), h=getmaxy(),end=0,i,j,x_dis,flag=0, lowStock=0;
-	struct product pdt[1];
+	int w=getmaxx(), h=getmaxy(),end=0,i,x_dis,flag=0, lowStock=0;
 	cleardevice();
 
 	theme();
@@ -358,7 +357,6 @@ void menu(int o){
 	setcolor(WHITE);
 	outtextxy(157, 327, "Exit(x)");
 	setcolor(BLACK);
-	j=0;
 	x_dis=0;
 	if(scan == 0){
 	for(i=0;i<=250;i++){
@@ -398,8 +396,8 @@ void menu(int o){
 		alert();
 		outtext("file not found");
 		}
-		while(fread(&pdt, sizeof(struct product), 1, fp)){
-			if(pdt[0].quantity <=20){
+		while(fread(&pdt, sizeof(pdt), 1, fp)){
+			if(pdt.quantity <=20){
 				lowStock++;
 			}
 		}
@@ -481,7 +479,7 @@ void menu(int o){
 void viewLowStock(){
 	char category[20],price[20],quantity[20],c,countC[20],tmpId[20];
 	int w= getmaxx(), h= getmaxy(),height=180,id,end=0,count=0,i=0, perPage;
-	struct product pdt[1], pdt1[100];
+	struct product pdt1[100];
 	FILE *fp;
 	cleardevice();
 	theme();
@@ -498,14 +496,15 @@ void viewLowStock(){
 	outtext("Error");
 	return;
 	}
-	while(fread(&pdt, sizeof(struct product), 1, fp)){
-		if(pdt[0].quantity <= 20){
-			pdt1[count] = pdt[0];
+	while(fread(&pdt, sizeof(pdt), 1, fp)){
+		if(pdt.quantity <= 20){
+			pdt1[count] = pdt;
 			count++;
 		}
 
 
 	}
+	fclose(fp);
 	perPage = (((h-100)-180)/40);
 	if(count>0){
 		sprintf(countC, "%d", count);
@@ -637,7 +636,6 @@ void viewLowStock(){
 		outtextxy(120,155,"0 product found :( ");
 		getch();
 	}
-	fclose(fp) ;
 
 }
 void checkSelection(int o,int n){
@@ -698,7 +696,7 @@ void createBill(){
 	int h= getmaxy(), w= getmaxx(),AD=0,id, QT, found=1,discount,Ipayment,Ichange;
 	float total=0, tax=0;
 	char c,gtotal[20],cdiscount[20],ctax[20],ctotal[20],payment[20],change[20];
-	struct product pdt;
+	struct product pdt1;
 	char tmpId[20], tmpQT[20];
 	FILE *fp, *fp2;
 	cleardevice();
@@ -726,8 +724,8 @@ void createBill(){
 	line(w-410, h-100, w-410, h-20);
 	fp = fopen("product.txt", "r");
 	fp2 = fopen("temp.txt", "w");
-	while(fread(&pdt, sizeof(pdt), 1, fp)){
-		fwrite(&pdt, sizeof(pdt), 1, fp2);
+	while(fread(&pdt1, sizeof(pdt1), 1, fp)){
+		fwrite(&pdt1, sizeof(pdt1), 1, fp2);
 	}
 	fclose(fp);
 	fclose(fp2);
@@ -748,14 +746,14 @@ void createBill(){
 		sscanf(tmpId, "%d", &id);
 		fp = fopen("temp.txt", "r");
 		fp2 = fopen("temp2.txt", "w");
-		while(fread(&pdt, sizeof(struct product), 1, fp)){
-			if(pdt.id == id){
+		while(fread(&pdt1, sizeof(struct product), 1, fp)){
+			if(pdt1.id == id){
 			found =0;
 			setcolor(LIGHTGREEN);
 			outtextxy(w-190,180, "Product Found!" );
 			setcolor(WHITE);
 			outtextxy(w-190, 200, "Name: ");
-			outtextxy(w-140, 200, pdt.name);
+			outtextxy(w-140, 200, pdt1.name);
 			outtextxy(w-190,220,"Enter Quantity: ");
 			getText(tmpQT,w-40,220,20);
 			sscanf(tmpQT, "%d", &QT);
@@ -770,23 +768,23 @@ void createBill(){
 			      setcolor(LIGHTGREEN);
 			      outtextxy(w-190, 280, "Added!");
 				addrow(id, QT);
-				pdt.quantity = pdt.quantity - QT;
-				total += QT * pdt.price;
+				pdt1.quantity = pdt1.quantity - QT;
+				total += QT * pdt1.price;
 
 			}else{
 				setcolor(RED);
 				outtextxy(w-190, 280, "Not Added!");
 			}
 			}
-			fwrite(&pdt, sizeof(pdt), 1, fp2);
+			fwrite(&pdt1, sizeof(pdt1), 1, fp2);
 
 		}
 		fclose(fp);
 		fclose(fp2);
 		fp = fopen("temp2.txt", "r");
 		fp2 = fopen("temp.txt", "w");
-		while(fread(&pdt, sizeof(pdt), 1, fp)){
-		fwrite(&pdt, sizeof(pdt), 1, fp2);
+		while(fread(&pdt1, sizeof(pdt1), 1, fp)){
+		fwrite(&pdt1, sizeof(pdt1), 1, fp2);
 		}
 		fclose(fp);
 		fclose(fp2);
@@ -886,8 +884,8 @@ void createBill(){
 	if(c !='n'){
 		fp = fopen("temp.txt", "r");
 		fp2 = fopen("product.txt", "w");
-		while(fread(&pdt, sizeof(pdt), 1, fp)){
-			fwrite(&pdt, sizeof(pdt), 1, fp2);
+		while(fread(&pdt1, sizeof(pdt1), 1, fp)){
+			fwrite(&pdt1, sizeof(pdt1), 1, fp2);
 		}
 		fclose(fp);
 		fclose(fp2);
@@ -908,20 +906,20 @@ void createBill(){
 void addrow(int id, int qt){
 	int pTotal;
 	char tmpId[20],price[20],quantity[20], proTotal[20];
-	struct product pdt[1];
+	struct product pdt1[1];
 	FILE *fp;
 	sprintf(tmpId, "%d", id);
 	sprintf(quantity, "%d", qt);
 	fp = fopen("product.txt", "r");
 	setcolor(DARKGRAY);
-	while(fread(&pdt, sizeof(struct product), 1, fp)){
-		if(pdt[0].id == id){
+	while(fread(&pdt1, sizeof(struct product), 1, fp)){
+		if(pdt1[0].id == id){
 			outtextxy(25, 135+ theight, tmpId);
-			outtextxy(60, 135+theight, pdt[0].name);
-			sprintf(price, "%d", pdt[0].price);
+			outtextxy(60, 135+theight, pdt1[0].name);
+			sprintf(price, "%d", pdt1[0].price);
 			outtextxy(220,135+theight,price);
 			outtextxy(290,135+theight, quantity);
-			pTotal = pdt[0].price * qt;
+			pTotal = pdt1[0].price * qt;
 			sprintf(proTotal, "%d", pTotal);
 			outtextxy(350, 135+ theight, proTotal);
 		}
@@ -1021,9 +1019,8 @@ void manageStock(int o){
 void addProduct(){
 	int w= getmaxx(), h= getmaxy(),qt, price,n;
 	char name[20],category[20], tmpPrice[20], tmpQt[20],c,tmpId[20];
-	FILE *fp, *fp1;
-	struct product pdt[1];
-	struct product pdt1[1];
+	FILE *fpAdd, *fpAdd1;
+	struct product pdt1;
 	cleardevice();
 	theme();
 	info();
@@ -1035,41 +1032,41 @@ void addProduct(){
 	setcolor(WHITE);
 	settextstyle(0, HORIZ_DIR, 1);
 	outtextxy(120, 140, "Product name: ");
-	getText(pdt[0].name, 260, 140,20);
+	getText(pdt.name, 260, 140,20);
 	outtextxy(120, 160, "Category:");
-	getText(pdt[0].category, 260, 160,20);
+	getText(pdt.category, 260, 160,20);
 	outtextxy(120, 180,"Price(each): ");
 	getText(tmpPrice, 260, 180, 20);
 	sscanf(tmpPrice, "%d", &price);
 	outtextxy(120, 200, "Quantity: ");
 	getText(tmpQt, 260, 200, 20);
 	sscanf(tmpQt, "%d", &qt);
-	pdt[0].quantity = qt;
-	pdt[0].price = price;
-	fp = fopen("product.txt", "a+");
-	fp1= fopen("product.txt","r");
-	if(fp == NULL){
+	pdt.quantity = qt;
+	pdt.price = price;
+	fpAdd = fopen("product.txt", "a+");
+	fpAdd1= fopen("product.txt","r");
+	if(fpAdd == NULL || fpAdd1 == NULL){
 		alert();
 		outtext("Error while getting DB");
 	}else{
-		fseek(fp,0,SEEK_END);
-	       n = ftell(fp)/sizeof(pdt);
+		fseek(fpAdd,0,SEEK_END);
+	       n = ftell(fpAdd)/sizeof(pdt);
 	       sprintf(tmpId, "%d", n);
 			outtextxy(180, 260, tmpId);
 	       if(n>0){
-		while(fread(&pdt1, sizeof(struct product), 1, fp1)){
-			n = pdt1[0].id + 1;
-			sprintf(tmpId, "%d", pdt1[0].id);
+		while(fread(&pdt1, sizeof(pdt), 1, fpAdd1)){
+			n = pdt1.id + 1;
+			sprintf(tmpId, "%d", pdt1.id);
 			outtextxy(180, 240, tmpId);
 		}
 		}else{
 		n=1;
 		}
-		pdt[0].id =n;
-		fwrite(&pdt[0], sizeof(pdt), 1, fp);
+		pdt.id =n;
+		fwrite(&pdt, sizeof(pdt), 1, fpAdd);
 	}
-	fclose(fp);
-	fclose(fp1);
+	fclose(fpAdd);
+	fclose(fpAdd1);
 	alert();
 	info();
 	settextstyle(0, HORIZ_DIR, 1);
@@ -1208,8 +1205,7 @@ void getProductMenu(int o){
 
 void getProduct(){
 	char tmpId[20],price[20],quantity[20],c;
-	int w= getmaxx(), h= getmaxy(),i=10,id,found=1;
-	struct product pdt[1];
+	int w= getmaxx(), h= getmaxy(),id,found=1;
 	FILE *fp;
 	cleardevice();
 	theme();
@@ -1225,22 +1221,27 @@ void getProduct(){
 	getText(tmpId,260,145,20);
 	sscanf(tmpId, "%d", &id);
 	fp = fopen("product.txt", "r");
-	while(fread(&pdt, sizeof(struct product), 1, fp)){
-		if(pdt[0].id == id){
+	if(fp == NULL){
+		    alert();
+		    outtext("couldnt open file");
+		    return;
+		    }
+	while(fread(&pdt, sizeof(pdt), 1, fp)){
+		if(pdt.id == id){
 		settextstyle(0, HORIZ_DIR, 2);
 		setcolor(YELLOW);
-		outtextxy(120,180, pdt[0].name);
+		outtextxy(120,180, pdt.name);
 		settextstyle(0, HORIZ_DIR, 1);
 		setcolor(WHITE);
 		outtextxy(120, 200, "ID: ");
 		outtextxy(150, 200, tmpId);
 		outtextxy(120, 220,"Category: ");
-		outtextxy(200,220, pdt[0].category);
+		outtextxy(200,220, pdt.category);
 		outtextxy(120, 240, "Price: ");
-		sprintf(price, "%d", pdt[0].price);
+		sprintf(price, "%d", pdt.price);
 		outtextxy(180, 240, price);
 		outtextxy(120, 260, "Quantity: ");
-		sprintf(quantity, "%d", pdt[0].quantity);
+		sprintf(quantity, "%d", pdt.quantity);
 		outtextxy(200, 260, quantity);
 		found = 0;
 		}
@@ -1275,28 +1276,29 @@ void getProduct(){
 void searchByName(){
 	 char name[20],price[20],quantity[20],c,countC[20],tmpId[20];
 	int w= getmaxx(), h= getmaxy(),height=180,id,end=0,count=0,i=0, perPage;
-	struct product pdt[1], pdt1[100];
+	struct product pdt1[100];
 	FILE *fByN;
 	cleardevice();
 	theme();
 	info();
 	setfillstyle(SOLID_FILL, LIGHTBLUE);
-	outtext("Get Category");
+	outtext("Get by Name");
 	setcolor(BLACK);
 	rectangle(100,130,w-100, h-50 );
 	floodfill(110,135, BLACK);
 	settextstyle(0, HORIZ_DIR, 1);
 	outtextxy(120,145,"Enter Name: ");
 	getText(name, 300,145, 20);
+	fcloseall();
 	fByN = fopen("product.txt", "r");
 	if(fByN == NULL){
 	alert();
-	outtext("error");
+	outtext("error from n");
 	return;
 	}
-	while(fread(&pdt, sizeof(struct product), 1, fByN)){
-		if(strcmp(pdt[0].name , name) ==0){
-			pdt1[count] = pdt[0];
+	while(fread(&pdt, sizeof(pdt), 1, fByN)){
+		if(strcmp(pdt.name , name) ==0){
+			pdt1[count] = pdt;
 			count++;
 		}
 
@@ -1450,9 +1452,9 @@ void searchByName(){
 
 }
 void searchAllProduct(){
-	char category[20],price[20],quantity[20],c,countC[20],tmpId[20];
+	char price[20],quantity[20],c,countC[20],tmpId[20];
 	int w= getmaxx(), h= getmaxy(),height=180,id,end=0,count=0,i=0, perPage;
-	struct product pdt[1], pdt1[1000];
+	struct product pdt1[1000];
 	FILE *fAllP;
 	cleardevice();
 	theme();
@@ -1463,14 +1465,15 @@ void searchAllProduct(){
 	rectangle(100,130,w-100, h-50 );
 	floodfill(110,135, BLACK);
 	settextstyle(0, HORIZ_DIR, 1);
+	fcloseall();
 	fAllP = fopen("product.txt", "r");
 	if(fAllP == NULL){
 	alert();
-	outtext("error");
+	outtext("error from all");
 	return;
 	}
-	while(fread(&pdt, sizeof(struct product), 1, fAllP)){
-			pdt1[count] = pdt[0];
+	while(fread(&pdt, sizeof(pdt), 1, fAllP)){
+			pdt1[count] = pdt;
 			count++;
 	}
 	fclose(fAllP);
@@ -1506,15 +1509,15 @@ void searchAllProduct(){
 				setfillstyle(SOLID_FILL, WHITE);
 				rectangle(150, height, w-150, height+30);
 				floodfill(152, height+2, BLACK);
-				sprintf(tmpId, "ID: %d", pdt1[i].id);
+				sprintf(tmpId, "ID:%d", pdt1[i].id);
 				outtextxy(155, height+12, tmpId);
 				setcolor(MAGENTA);
 				outtextxy(215,height+12, pdt1[i].name);
-				sprintf(price, "Rs: %d",pdt1[i].price);
+				sprintf(price, "Rs:%d",pdt1[i].price);
 				setcolor(GREEN);
 				outtextxy(310,height+12,price);
 				setcolor(BLACK);
-				sprintf(quantity, "QT: %d", pdt1[i].quantity);
+				sprintf(quantity, "QT:%d", pdt1[i].quantity);
 				outtextxy(400, height+12, quantity);
 				i++;
 
@@ -1538,8 +1541,6 @@ void searchAllProduct(){
 			outtextxy(w-188, h-74, "Next(d)");
 		}
 		end=0;
-		sprintf(category , "%d", perPage);
-		outtextxy(200,200,category);
 		while(!end){
 			c=getch();
 			switch(c){
@@ -1622,7 +1623,7 @@ void searchAllProduct(){
 void searchByC(){
 	char category[20],price[20],quantity[20],c,countC[20],tmpId[20];
 	int w= getmaxx(), h= getmaxy(),height=180,id,end=0,count=0,i=0, perPage;
-	struct product pdt[1], pdt1[100];
+	struct product pdt1[100];
 	FILE *fByC;
 	cleardevice();
 	theme();
@@ -1635,15 +1636,16 @@ void searchByC(){
 	settextstyle(0, HORIZ_DIR, 1);
 	outtextxy(120,145,"Enter Category: ");
 	getText(category, 300,145, 20);
+	fcloseall();
 	fByC = fopen("product.txt", "r");
 	if(fByC == NULL){
 	alert();
-	outtext("error");
+	outtext("error from c");
 	return;
 	}
-	while(fread(&pdt, sizeof(struct product), 1, fByC)){
-		if(strcmp(pdt[0].category , category) ==0){
-			pdt1[count] = pdt[0];
+	while(fread(&pdt, sizeof(pdt), 1, fByC)){
+		if(strcmp(pdt.category , category) ==0){
+			pdt1[count] = pdt;
 			count++;
 		}
 
@@ -1798,8 +1800,7 @@ void searchByC(){
 }
 void editProduct(){
 	char tmpId[20],price[20],quantity[20],c,tmpPrice[20], tmpQt[20];
-	int w= getmaxx(), h= getmaxy(),i=10,id,found=1;
-	struct product pdt;
+	int w= getmaxx(), h= getmaxy(),id,found=1;
 	FILE *fp , *fp2;
 	cleardevice();
 	theme();
@@ -1816,7 +1817,12 @@ void editProduct(){
 	sscanf(tmpId, "%d", &id);
 	fp = fopen("product.txt", "r");
 	fp2 = fopen("tmp.txt", "w");
-	while(fread(&pdt, sizeof(struct product), 1, fp)){
+	if(fp2 == NULL || fp == NULL){
+		    alert();
+		    outtext("couldnt open file");
+		    return;
+		    }
+	while(fread(&pdt, sizeof(pdt), 1, fp)){
 		if(pdt.id == id){
 		settextstyle(0, HORIZ_DIR, 2);
 		setcolor(YELLOW);
@@ -1852,6 +1858,11 @@ void editProduct(){
 	if(found == 0){
 		    fp2 = fopen("tmp.txt", "r");
 		    fp = fopen("product.txt", "w");
+		    if(fp2 == NULL || fp == NULL){
+		    alert();
+		    outtext("couldnt open file");
+		    return;
+		    }
 		    while(fread(&pdt, sizeof(pdt), 1, fp2)){
 			fwrite(&pdt, sizeof(pdt), 1, fp);
 		    }
@@ -1890,9 +1901,8 @@ void editProduct(){
 }
 void deleteProduct(){
 	char tmpId[20],price[20],quantity[20],c,c1;
-	int w= getmaxx(), h= getmaxy(),i=10,id,found=1;
-	struct product pdt[1];
-	FILE *fp, *fp1;
+	int w= getmaxx(), h= getmaxy(),id,found=1;
+	FILE *fpdel, *fpdel1;
 	cleardevice();
 	theme();
 	info();
@@ -1906,26 +1916,31 @@ void deleteProduct(){
 	outtextxy(120,145,"Enter product ID: ");
 	getText(tmpId,260,145,20);
 	sscanf(tmpId, "%d", &id);
-	fp = fopen("product.txt", "r");
-	while(fread(&pdt, sizeof(struct product), 1, fp)){
-		if(pdt[0].id == id){
+	fpdel = fopen("product.txt", "r");
+	if(fpdel == NULL){
+		alert();
+		outtext("couldnt open file");
+		return;
+	 }
+	while(fread(&pdt, sizeof(pdt), 1, fpdel)){
+		if(pdt.id == id){
 		settextstyle(0, HORIZ_DIR, 2);
 		setcolor(YELLOW);
-		outtextxy(120,180, pdt[0].name);
+		outtextxy(120,180, pdt.name);
 		settextstyle(0, HORIZ_DIR, 1);
 		setcolor(WHITE);
 		outtextxy(120, 200, "ID: ");
 		outtextxy(150, 200, tmpId);
 		outtextxy(120, 220, "Price: ");
-		sprintf(price, "%d", pdt[0].price);
+		sprintf(price, "%d", pdt.price);
 		outtextxy(180, 220, price);
 		outtextxy(120, 240, "Quantity: ");
-		sprintf(quantity, "%d", pdt[0].quantity);
+		sprintf(quantity, "%d", pdt.quantity);
 		outtextxy(200, 240, quantity);
 		found = 0;
 		}
 	}
-	fclose(fp);
+	fclose(fpdel);
 	if(found == 0){
 		setcolor(BLACK);
 		rectangle(120,h-80, 200, h-60);
@@ -1955,23 +1970,33 @@ void deleteProduct(){
 			if(c1 =='n'){
 				manageStock(1);
 			}else{
-				fp = fopen("product.txt", "r");
-				fp1 = fopen("temp.txt", "w");
-				while(fread(&pdt, sizeof(pdt), 1, fp)){
-					if(pdt[0].id != id){
-						fwrite(&pdt, sizeof(pdt), 1, fp1);
+				fpdel = fopen("product.txt", "r");
+				fpdel1 = fopen("temp.txt", "w");
+				if(fpdel == NULL || fpdel1 == NULL){
+				alert();
+				outtext("couldnt open file");
+				return ;
+				}
+				while(fread(&pdt, sizeof(pdt), 1, fpdel)){
+					if(pdt.id != id){
+						fwrite(&pdt, sizeof(pdt), 1, fpdel1);
 					}
 				}
-				fclose(fp);
-				fclose(fp1);
+				fclose(fpdel);
+				fclose(fpdel1);
 
-				fp = fopen("temp.txt", "r");
-				fp1 = fopen("product.txt", "w");
-				while(fread(&pdt, sizeof(pdt), 1, fp)){
-					fwrite(&pdt, sizeof(pdt), 1, fp1);
+				fpdel = fopen("temp.txt", "r");
+				fpdel1 = fopen("product.txt", "w");
+				if(fpdel == NULL || fpdel1 == NULL){
+				alert();
+				outtext("couldnt open file");
+				return;
 				}
-				fclose(fp);
-				fclose(fp1);
+				while(fread(&pdt, sizeof(pdt), 1, fpdel)){
+					fwrite(&pdt, sizeof(pdt), 1, fpdel1);
+				}
+				fclose(fpdel);
+				fclose(fpdel1);
 				info();
 				outtext("Delete successful!");
 				getch();
@@ -1994,7 +2019,7 @@ void deleteProduct(){
 void changePass(){
 	FILE *fp;
 	struct user usr[1];
-	int checkPw, w = getmaxx(), h=getmaxy(),passPos1=0, passPos=0,end=0, end1=0;
+	int checkPw, w = getmaxx(),passPos1=0, passPos=0,end=0, end1=0;
 	char password[20],password2[20],p, cpassword[20], cpassword2[20];
 	checkPw = askPassword();
 	if(checkPw == 0){
