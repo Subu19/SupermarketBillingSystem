@@ -39,6 +39,7 @@ struct user {
 	char username[20];
 	char password[20];
 };
+//main function
 void main()
 {
 int gd = DETECT, gm;
@@ -46,7 +47,7 @@ char array[100];
 int passwordStatus;
 FILE *fptr;
 initgraph(&gd,&gm,"C:\\TURBOC3\\BGI");
-theme();
+theme();       //set theme of the program
 	//set border and title
 	againPassword:
 	//ask password
@@ -398,7 +399,7 @@ void menu(int o){
 		outtext("file not found");
 		}
 		while(fread(&pdt, sizeof(struct product), 1, fp)){
-			if(pdt[0].quantity <20){
+			if(pdt[0].quantity <=20){
 				lowStock++;
 			}
 		}
@@ -409,6 +410,14 @@ void menu(int o){
 			sprintf(lowStockC, "%d", lowStock);
 			setcolor(RED);
 			outtextxy(w-190, h-70, lowStockC);
+			setcolor(BLACK);
+			outtextxy(w-179, h-70, "Items are low on stock!");
+			setcolor(LIGHTGRAY);
+			outtextxy(w-190, h-50,"Press (e) to view." );
+		}else{
+			setcolor(RED);
+			settextstyle(0, HORIZ_DIR, 1);
+			outtextxy(w-190, h-70, "0");
 			setcolor(BLACK);
 			outtextxy(w-179, h-70, "Items are low on stock!");
 			setcolor(LIGHTGRAY);
@@ -1006,8 +1015,6 @@ void manageStock(int o){
 				if(c=='y'){
 				end=1;
 				}
-
-
 	       }
 	}while(!end);
 }
@@ -1238,6 +1245,7 @@ void getProduct(){
 		found = 0;
 		}
 	}
+	fclose(fp);
 	if(found == 0){
 		setcolor(BLACK);
 		rectangle(120,h-80, 200, h-60);
@@ -1263,13 +1271,12 @@ void getProduct(){
 	getch();
 	manageStock(1);
 		}
-	fclose(fp);
 }
 void searchByName(){
 	 char name[20],price[20],quantity[20],c,countC[20],tmpId[20];
 	int w= getmaxx(), h= getmaxy(),height=180,id,end=0,count=0,i=0, perPage;
 	struct product pdt[1], pdt1[100];
-	FILE *fp;
+	FILE *fByN;
 	cleardevice();
 	theme();
 	info();
@@ -1281,13 +1288,13 @@ void searchByName(){
 	settextstyle(0, HORIZ_DIR, 1);
 	outtextxy(120,145,"Enter Name: ");
 	getText(name, 300,145, 20);
-	fp = fopen("product.txt", "r");
-	if(fp == NULL){
+	fByN = fopen("product.txt", "r");
+	if(fByN == NULL){
 	alert();
 	outtext("error");
 	return;
 	}
-	while(fread(&pdt, sizeof(struct product), 1, fp)){
+	while(fread(&pdt, sizeof(struct product), 1, fByN)){
 		if(strcmp(pdt[0].name , name) ==0){
 			pdt1[count] = pdt[0];
 			count++;
@@ -1295,7 +1302,7 @@ void searchByName(){
 
 
 	}
-	fclose(fp);
+	fclose(fByN);
 	perPage = (((h-100)-180)/38);
 	if(count>0){
 		sprintf(countC, "%d", count);
@@ -1446,7 +1453,7 @@ void searchAllProduct(){
 	char category[20],price[20],quantity[20],c,countC[20],tmpId[20];
 	int w= getmaxx(), h= getmaxy(),height=180,id,end=0,count=0,i=0, perPage;
 	struct product pdt[1], pdt1[1000];
-	FILE *fp;
+	FILE *fAllP;
 	cleardevice();
 	theme();
 	info();
@@ -1456,17 +1463,17 @@ void searchAllProduct(){
 	rectangle(100,130,w-100, h-50 );
 	floodfill(110,135, BLACK);
 	settextstyle(0, HORIZ_DIR, 1);
-	fp = fopen("product.txt", "r");
-	if(fp == NULL){
+	fAllP = fopen("product.txt", "r");
+	if(fAllP == NULL){
 	alert();
 	outtext("error");
 	return;
 	}
-	while(fread(&pdt, sizeof(struct product), 1, fp)){
+	while(fread(&pdt, sizeof(struct product), 1, fAllP)){
 			pdt1[count] = pdt[0];
 			count++;
 	}
-	fclose(fp);
+	fclose(fAllP);
 	perPage = (((h-100)-180)/38);
 	if(count>0){
 		sprintf(countC, "%d", count);
@@ -1616,7 +1623,7 @@ void searchByC(){
 	char category[20],price[20],quantity[20],c,countC[20],tmpId[20];
 	int w= getmaxx(), h= getmaxy(),height=180,id,end=0,count=0,i=0, perPage;
 	struct product pdt[1], pdt1[100];
-	FILE *fp;
+	FILE *fByC;
 	cleardevice();
 	theme();
 	info();
@@ -1628,13 +1635,13 @@ void searchByC(){
 	settextstyle(0, HORIZ_DIR, 1);
 	outtextxy(120,145,"Enter Category: ");
 	getText(category, 300,145, 20);
-	fp = fopen("product.txt", "r");
-	if(fp == NULL){
+	fByC = fopen("product.txt", "r");
+	if(fByC == NULL){
 	alert();
 	outtext("error");
 	return;
 	}
-	while(fread(&pdt, sizeof(struct product), 1, fp)){
+	while(fread(&pdt, sizeof(struct product), 1, fByC)){
 		if(strcmp(pdt[0].category , category) ==0){
 			pdt1[count] = pdt[0];
 			count++;
@@ -1642,7 +1649,7 @@ void searchByC(){
 
 
 	}
-	fclose(fp);
+	fclose(fByC);
 	perPage = (((h-100)-180)/38);
 	if(count>0){
 		sprintf(countC, "%d", count);
